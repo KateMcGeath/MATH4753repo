@@ -1,0 +1,93 @@
+---
+title: "Lab2"
+author: "Kate McGeath"
+date: "9/2/2022"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Tasks
+
+## Task 1
+
+```{r}
+getwd()
+```
+
+## Task 2
+
+```{r}
+epagas = read.csv("EPAGAS.csv")
+head(epagas)
+```
+
+## Task 3
+
+Make the object mgp: the number of miles per gallon vector
+```{r}
+mpg = epagas$MPG
+head(mpg)
+```
+
+Transform mpg to z and verify results:
+```{r}
+z = (mpg - mean(mpg)) / sd(mpg)
+head(z)
+print(paste0("mean = ", round(mean(z), digits = 4)), quote = FALSE)
+print(paste0("variance = ", var(z)), quote = FALSE)
+print(paste0("standard deviation = ", sd(z)), quote = FALSE)
+```
+
+Values of mpg that are possible outliers:
+```{r}
+mpg[abs(z) >= 2 & abs(z) <= 3]
+```
+
+Values of mpg defined as outliers:
+```{r}
+mpg[abs(z) > 3]
+```
+
+```{r}
+mpgcol = ifelse(abs(z) > 3, "red",
+                ifelse(abs(z) >= 2 & abs(z) <= 3, "blue", "black"))
+
+library(lattice)
+dotplot(mpg, col = mpgcol, main = "Plot of mpg values")
+```
+
+## Task 4
+
+```{r}
+boxplot(mpg, main = "MPG Boxplot", xlab = "MPG", col = "black", horizontal = TRUE, notch = TRUE)
+```
+
+Chebyshev's Theorm says at least
+
+1 - (1 / k^2)
+
+of the data will fall within k standard deviations of the mean.
+With k = 2,
+```{r}
+k = 2
+cheb = 1 - 1 / (k^2)
+cheb
+```
+
+The Proportion/Percentage of data within 2 standard deviations of the mean:
+```{r}
+tempData<-epagas[abs(z)<2,"MPG"]
+length(tempData)/length(epagas$MPG)*100
+```
+
+Chebyshev would agree because more than 3/4ths of the data lies within 2 standard deviations.
+
+According to the Empirical Rule, 95% will fall within 2 standard deviations of the mean.
+Therefore, the Empirical rule is valid.
