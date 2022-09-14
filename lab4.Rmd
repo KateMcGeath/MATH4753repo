@@ -1,0 +1,38 @@
+---
+title: "lab4"
+date: "2022-09-14"
+output: 
+  html_document:
+    toc = yes;
+    toc_float = yes;
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Task 1
+Getting the working directory.
+```{r}
+getwd()
+```
+
+# Task 2
+Reading in the data from SPRUCE.csv and displaying the last 6 elements.
+```{r}
+spruce.df = read.csv("SPRUCE.csv")
+tail(spruce.df)
+```
+
+# Task 3
+A lowess smoother scatter plot of the data.
+```{r}
+library(s20x)
+
+```
+
+Make a linear model object.
+```{r}
+spruce.lm = with(spruce.df, lm(Height~BHDiameter))
+```
+
