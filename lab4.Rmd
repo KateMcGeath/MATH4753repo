@@ -3,8 +3,8 @@ title: "lab4"
 date: "2022-09-14"
 output: 
   html_document:
-    toc = yes;
-    toc_float = yes;
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -28,11 +28,131 @@ tail(spruce.df)
 A lowess smoother scatter plot of the data.
 ```{r}
 library(s20x)
-
+trendscatter(Height~BHDiameter, data = spruce.df, f = 0.5)
 ```
 
 Make a linear model object.
 ```{r}
 spruce.lm = with(spruce.df, lm(Height~BHDiameter))
+```
+
+Storing residuals into object.
+```{r}
+height.res <- residuals(spruce.lm)
+```
+
+Finding fitted values.
+```{r}
+height.fit <- fitted(spruce.lm)
+```
+
+Plot the residuals vs fitted values.
+```{r}
+plot(x = height.fit, y = height.res)
+```
+
+```{r}
+trendscatter(x = height.fit, y = height.res)
+```
+
+Both graphs show a parabolic shape, although a few outliers persist.
+
+Making the residual plot.
+```{r}
+plot(spruce.lm)
+```
+
+Checking normality.
+```{r}
+normcheck(spruce.lm, shapiro.wilk = TRUE)
+```
+
+The p-value is 0.29, which is greater than 0.05 and thus we reject the Null hypothesis.
+
+If the model works well with the data we should expect that the residuals are approximately normal in distribution with mean 0 and constant variance.
+
+A straight line would not be the best fit for this data because it displays a quadratic shape.
+
+# Task 4
+
+Fit a quadratic.
+```{r}
+quad.lm <- lm(Height~BHDiameter + I(BHDiameter ^ 2), data = spruce.df)
+```
+
+Plot Height vs BHDiameter and add the quadratic curve.
+```{r}
+plot(Height~BHDiameter,bg="Blue",pch=21,cex=1.2,
+ylim=c(0,max(Height)),xlim=c(0,max(BHDiameter)), 
+main="Spruce height prediction",data=spruce.df)
+
+myplot=function(x){
+ quad.lm$coef[1] + quad.lm$coef[2] * x + quad.lm$coef[3] * x ^ 2
+ } 
+ 
+curve(myplot, lwd = 2, col = "steelblue", add = TRUE)
+
+```
+
+Make quad.fit and plot the residualss vs fitted values.
+```{r}
+quad.fit <- fitted(quad.lm)
+plot(quad.lm, which = 1)
+```
+
+Normality check.
+```{r}
+normcheck(quad.lm, shapiro.wilk = TRUE)
+```
+
+The p-value is 0.684, therefore we accept the null hypothesis.
+The quadratic line better fits the data than a straight line.
+
+# Task 5
+
+```{r}
+summary(quad.lm)
+```
+Beta hat values.
+$\widehat{\beta_{0}}$ = 0.8609
+$\widehat{\beta_{1}}$ = 1.4696
+$\widehat{\beta_{2}}$ = -0.0275
+
+Interval estimates.
+```{r}
+ciReg(quad.lm)
+```
+
+Equation of the fitted line.
+$\widehat{Height}$ = 0.8609 + 1.4696$x$ - 0.0275$x^{2}$
+
+Height predictions.
+```{r}
+predict(quad.lm, data.frame(BHDiameter = c(15, 18, 20)))
+```
+
+Comparison with previous prediction.
+```{r}
+predict(spruce.lm, data.frame(BHDiameter = c(15, 18, 20)))
+```
+
+The quad.lm predictions are larger than the spruce.lm predictions.
+
+Multiple $R^{2}$.
+```{r}
+summary(quad.lm)$r.squared
+```
+
+```{r}
+summary(spruce.lm)$r.squared
+```
+
+Adjusted $R^{2}$.
+```{r}
+summary(quad.lm)$adj.r.squared
+```
+
+```{r}
+summary(spruce.lm)$adj.r.squared
 ```
 
