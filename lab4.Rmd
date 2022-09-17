@@ -12,41 +12,41 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Task 1
-Getting the working directory.
+## Getting the working directory.
 ```{r}
 getwd()
 ```
 
 # Task 2
-Reading in the data from SPRUCE.csv and displaying the last 6 elements.
+## Reading in the data from SPRUCE.csv and displaying the last 6 elements.
 ```{r}
 spruce.df = read.csv("SPRUCE.csv")
 tail(spruce.df)
 ```
 
 # Task 3
-A lowess smoother scatter plot of the data.
+## A lowess smoother scatter plot of the data.
 ```{r}
 library(s20x)
 trendscatter(Height~BHDiameter, data = spruce.df, f = 0.5)
 ```
 
-Make a linear model object.
+## Make a linear model object.
 ```{r}
 spruce.lm = with(spruce.df, lm(Height~BHDiameter))
 ```
 
-Storing residuals into object.
+## Storing residuals into object.
 ```{r}
 height.res <- residuals(spruce.lm)
 ```
 
-Finding fitted values.
+## Finding fitted values.
 ```{r}
 height.fit <- fitted(spruce.lm)
 ```
 
-Plot the residuals vs fitted values.
+## Plot the residuals vs fitted values.
 ```{r}
 plot(x = height.fit, y = height.res)
 ```
@@ -57,12 +57,12 @@ trendscatter(x = height.fit, y = height.res)
 
 Both graphs show a parabolic shape, although a few outliers persist.
 
-Making the residual plot.
+## Making the residual plot.
 ```{r}
 plot(spruce.lm)
 ```
 
-Checking normality.
+## Checking normality.
 ```{r}
 normcheck(spruce.lm, shapiro.wilk = TRUE)
 ```
@@ -75,12 +75,12 @@ A straight line would not be the best fit for this data because it displays a qu
 
 # Task 4
 
-Fit a quadratic.
+## Fit a quadratic.
 ```{r}
 quad.lm <- lm(Height~BHDiameter + I(BHDiameter ^ 2), data = spruce.df)
 ```
 
-Plot Height vs BHDiameter and add the quadratic curve.
+## Plot Height vs BHDiameter and add the quadratic curve.
 ```{r}
 plot(Height~BHDiameter,bg="Blue",pch=21,cex=1.2,
 ylim=c(0,max(Height)),xlim=c(0,max(BHDiameter)), 
@@ -94,13 +94,13 @@ curve(myplot, lwd = 2, col = "steelblue", add = TRUE)
 
 ```
 
-Make quad.fit and plot the residualss vs fitted values.
+## Make quad.fit and plot the residualss vs fitted values.
 ```{r}
 quad.fit <- fitted(quad.lm)
 plot(quad.lm, which = 1)
 ```
 
-Normality check.
+## Normality check.
 ```{r}
 normcheck(quad.lm, shapiro.wilk = TRUE)
 ```
@@ -118,7 +118,7 @@ $\widehat{\beta_{0}}$ = 0.8609
 $\widehat{\beta_{1}}$ = 1.4696
 $\widehat{\beta_{2}}$ = -0.0275
 
-Interval estimates.
+## Interval estimates.
 ```{r}
 ciReg(quad.lm)
 ```
@@ -126,19 +126,19 @@ ciReg(quad.lm)
 Equation of the fitted line.
 $\widehat{Height}$ = 0.8609 + 1.4696$x$ - 0.0275$x^{2}$
 
-Height predictions.
+## Height predictions.
 ```{r}
 predict(quad.lm, data.frame(BHDiameter = c(15, 18, 20)))
 ```
 
-Comparison with previous prediction.
+## Comparison with previous prediction.
 ```{r}
 predict(spruce.lm, data.frame(BHDiameter = c(15, 18, 20)))
 ```
 
 The quad.lm predictions are larger than the spruce.lm predictions.
 
-Multiple $R^{2}$.
+## Multiple $R^{2}$.
 ```{r}
 summary(quad.lm)$r.squared
 ```
@@ -147,7 +147,7 @@ summary(quad.lm)$r.squared
 summary(spruce.lm)$r.squared
 ```
 
-Adjusted $R^{2}$.
+## Adjusted $R^{2}$.
 ```{r}
 summary(quad.lm)$adj.r.squared
 ```
@@ -156,3 +156,140 @@ summary(quad.lm)$adj.r.squared
 summary(spruce.lm)$adj.r.squared
 ```
 
+The quad.lm adjusted R squared is bigger than the spruce.lm.
+This shows that quad.lm has a better fit and predicts values closer to the data.
+
+The multiple R squared describes how well the model fits the data.
+
+Quad.lm explains the most variability in the height due to its adjusted R squared and R squared values being bigger then spruce.lm
+
+## Anova
+```{r}
+anova(spruce.lm)
+```
+
+```{r}
+anova(quad.lm)
+```
+
+```{r}
+anova(spruce.lm, quad.lm)
+```
+
+Conclusion: The second model, quad.lm, better fits the data because it has a smaller RSS value than spruce.lm.
+
+## TSS
+```{r}
+TSS <- with(spruce.df, sum((Height - mean(Height)) ^ 2))
+TSS
+```
+
+## MSS
+```{r}
+height.qfit <- fitted(quad.lm)
+MSS <- with(spruce.df, sum((height.qfit - mean(Height)) ^ 2))
+MSS
+```
+
+## RSS
+```{r}
+RSS = with(spruce.df, sum((Height - height.qfit) ^ 2))
+RSS
+```
+
+## MSS/TSS
+```{r}
+MSS / TSS
+```
+
+# Task 6
+
+## Make Cook's plot.
+```{r}
+cooks20x(quad.lm, main = "Cook's Plot")
+```
+
+Cook's distance is a way to determine outliers that negatively effect the model. It measures how much change occurs in the regression analysis when a data point is deleted.
+
+The plot shows that observation number 24 would have the most change in regression analysis.
+
+```{r}
+quad2.lm <- lm(Height~BHDiameter + I(BHDiameter ^ 2), data = spruce.df[-24,])
+summary(quad2.lm)
+```
+
+The multiple R-squared and adjusted R-squared are bigger values on quad2.lm. Therefore, the model better fits the data with the outlier, -24, removed.
+
+# Task 7
+
+## Prove Peicewise Theory.
+
+Suppose we have two line segments which make a reasonable fit to the data, joining at a single point $(x_{k}, y_{k})$ which we may call the change point. We wish to use data to estimate the lines annd some measure of fit to determine the change point.
+
+Suppose that for line 1 and line 2 we have the following formulae:
+  $l1$ : $y = \beta_{0} + \beta_{1}x$
+  $l2$ : $y = \beta_{0} + \delta + (\beta_{1} + \zeta)x$
+  
+  ![](piecewise.png){width=70%}
+fig 1: Piecewise
+
+Then at the change point we have the two lines intersecting:
+  $\beta_{0} + \beta_{1}x_{k} = \beta_{0} + \delta + (\beta_{1} + \zeta)x_{k}$
+  
+Hence we have:
+  $\delta = -\zeta x_{k}$
+  
+Therefore we can write l2 as:
+  $y = \beta_{0} - \zeta x_{k} + (\beta_{1} + \zeta)x$
+  
+That is,
+
+  $y = \beta_{0} + \beta_{1}x + \zeta (x - x_{k})$
+  
+l2 and l1 with an adjustment term.
+We will introduce an indicator function that will be 1 when $x > x_{k}$ and 0 else.
+So,
+  $y = \beta_{0} + \beta_{1}x + \zeta (x - x_{k})I(x > x_{k})$
+  
+Since the next line segment is the addition of an interaction term we can easily generalize this procedure.
+Say we have two change points and thus three line segments,
+Then:
+  $y = \beta_{0} + \beta_{1}x + \zeta (x - x_{k})I(x > x_{k}) + \beta_{3}(x - x_{k2})I(x > x_{k2})$
+  
+  
+## Reproducing plot.
+```{r}
+sp2.df <- within(spruce.df, X <- (BHDiameter - 18) * (BHDiameter > 18))
+sp2.df
+```
+
+```{r}
+lmp <- lm(Height~BHDiameter + X, data = sp2.df)
+tmp=summary(lmp)
+
+myf = function(x, coef) {
+  coef[1] + coef[2] * (x) + coef[3] * (x-18) * (x-18>0)
+}
+
+plot(Height~BHDiameter,bg="Blue",pch=21,cex=1.2,
+ylim=c(0,max(Height)),xlim=c(0,max(BHDiameter)), 
+main="Piecewise regression",data=spruce.df)
+
+myf(0, coef=tmp$coefficients[,"Estimate"])
+curve(myf(x,coef=tmp$coefficients[,"Estimate"] ),add=TRUE, lwd=2,col="Blue")
+abline(v=18)
+text(18,16,paste("R sq.=",round(tmp$r.squared,4) ))
+
+
+```
+
+
+# Task 8
+
+## Load package that I made.
+```{r}
+library(package)
+myread(dird = "/Users/katemcgeath/Desktop/MATH4753/LAB4/", "SPRUCE.csv")
+```
+
+My functions that I decided to make takes in a csv file and your directory where its located, and then reads in the information and displays it in a table.
